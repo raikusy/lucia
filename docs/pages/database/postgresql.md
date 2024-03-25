@@ -4,6 +4,8 @@ title: "PostgreSQL"
 
 # PostgreSQL
 
+> If you use Drizzle ORM in your project, use the [Drizzle adapter](https://lucia-auth.com/database/drizzle#postgresql) instead as Drizzle ORM overrides how your database driver handles dates.
+
 `@lucia-auth/adapter-postgresql` package provides adapters for PostgreSQL drivers:
 
 -   Neon HTTP serverless driver (`@neondatabase/serverless`)
@@ -15,6 +17,8 @@ npm install @lucia-auth/adapter-postgresql
 ```
 
 ## Schema
+
+User ID can be numeric (see [Define user ID type](/basics/users#define-user-id-type)) but session ID must be a string type.
 
 ```sql
 CREATE TABLE auth_user (

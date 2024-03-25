@@ -12,6 +12,10 @@ npm install @lucia-auth/adapter-prisma
 
 ## Schema
 
+While Lucia does not enforce model names, the relation name (`user`) in the session model must be the camel-case version of the user model name. For example, if the user model was named `AuthUser`, the relation must be named `Session.authUser`.
+
+User ID can be numeric (see [Define user ID type](/basics/users#define-user-id-type)) but session ID must be a string type.
+
 ```prisma
 model User {
   id       String    @id
@@ -31,7 +35,6 @@ model Session {
 `PrismaAdapter` takes a session and user model.
 
 ```ts
-import { Lucia } from "lucia";
 import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
 import { PrismaClient } from "@prisma/client";
 

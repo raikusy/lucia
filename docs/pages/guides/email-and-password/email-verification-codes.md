@@ -4,6 +4,8 @@ title: "Email verification codes"
 
 # Email verification codes
 
+We recommend reading through the [email verification guide](https://thecopenhagenbook.com/email-verification) in the Copenhagen Book.
+
 ## Update database
 
 ### User table
@@ -46,7 +48,7 @@ Create a table for storing for email verification codes.
 | ------------ | -------- | ------------------- |
 | `id`         | any      | auto increment, etc |
 | `code`       | `string` |                     |
-| `user_id`    | `string` | unique              |
+| `user_id`    | any      | unique              |
 | `email`      | `string` |                     |
 | `expires_at` | `Date`   |                     |
 
@@ -65,7 +67,7 @@ async function generateEmailVerificationCode(userId: string, email: string): Pro
 		user_id: userId,
 		email,
 		code,
-		expires_at: createDate(new TimeSpan(5, "m")) // 5 minutes
+		expires_at: createDate(new TimeSpan(15, "m")) // 15 minutes
 	});
 	return code;
 }
@@ -81,7 +83,6 @@ When a user signs up, set `email_verified` to `false`, create and send a verific
 
 ```ts
 import { generateId } from "lucia";
-import { encodeHex } from "oslo/encoding";
 
 app.post("/signup", async () => {
 	// ...
@@ -119,7 +120,7 @@ When resending verification emails, make sure to implement rate limiting based o
 Validate the verification code by comparing it against your database and checking the expiration and email. Make sure to invalidate all user sessions.
 
 ```ts
-import { isWithinExpiration } from "oslo";
+import { isWithinExpirationDate } from "oslo";
 import type { User } from "lucia";
 
 app.post("/email-verification", async () => {
@@ -174,7 +175,7 @@ async function verifyVerificationCode(user: User, code: string): Promise<boolean
 	await db.table("email_verification_code").where("id", "=", code.id).delete();
 	await db.commit();
 
-	if (!isWithinExpiration(databaseCode.expires_at)) {
+	if (!isWithinExpirationDate(databaseCode.expires_at)) {
 		return false;
 	}
 	if (databaseCode.email !== user.email) {

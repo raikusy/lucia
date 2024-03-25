@@ -1,6 +1,6 @@
 {
 	"name": "@lucia-auth/adapter-prisma",
-	"version": "4.0.0",
+	"version": "4.0.1",
 	"description": "Prisma adapter for Lucia",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
 	"scripts": {
 		"build": "shx rm -rf ./dist/* && tsc",
 		"test": "tsx tests/prisma.ts",
-		"test-setup": "prisma db push",
+		"test-setup": "prisma db push && prisma generate",
 		"auri.build": "pnpm build"
 	},
 	"keywords": [

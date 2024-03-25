@@ -6,7 +6,7 @@ title: "GitHub OAuth in Astro"
 
 Before starting, make sure you've set up your database and middleware as described in the [Getting started](/getting-started/astro) page.
 
-An [example project](https://github.com/lucia-auth/examples/tree/main/astro/github-oauth) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/v3/astro/github-oauth).
+An [example project](https://github.com/lucia-auth/examples/tree/main/astro/github-oauth) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/main/astro/github-oauth).
 
 ```
 npx degit https://github.com/lucia-auth/examples/tree/main/astro/github-oauth <directory_name>
@@ -154,6 +154,8 @@ export async function GET(context: APIContext): Promise<Response> {
 			}
 		});
 		const githubUser: GitHubUser = await githubUserResponse.json();
+
+		// Replace this with your own DB client.
 		const existingUser = await db.table("user").where("github_id", "=", githubUser.id).get();
 
 		if (existingUser) {
@@ -164,11 +166,14 @@ export async function GET(context: APIContext): Promise<Response> {
 		}
 
 		const userId = generateId(15);
+
+		// Replace this with your own DB client.
 		await db.table("user").insert({
 			id: userId,
 			github_id: githubUser.id,
 			username: githubUser.login
 		});
+
 		const session = await lucia.createSession(userId, {});
 		const sessionCookie = lucia.createSessionCookie(session.id);
 		context.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);

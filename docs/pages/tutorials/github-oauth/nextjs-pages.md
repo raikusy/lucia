@@ -6,7 +6,7 @@ title: "GitHub OAuth in Next.js Pages router"
 
 Before starting, make sure you've set up your database and middleware as described in the [Getting started](/getting-started/nextjs-pages) page.
 
-An [example project](https://github.com/lucia-auth/examples/tree/main/nextjs-pages/github-oauth) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/v3/nextjs-pages/github-oauth).
+An [example project](https://github.com/lucia-auth/examples/tree/main/nextjs-pages/github-oauth) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/main/nextjs-pages/github-oauth).
 
 ```
 npx degit https://github.com/lucia-auth/examples/tree/main/nextjs-pages/github-oauth <directory_name>
@@ -161,6 +161,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			}
 		});
 		const githubUser: GitHubUser = await githubUserResponse.json();
+
+		// Replace this with your own DB client.
 		const existingUser = await db.table("user").where("github_id", "=", githubUser.id).get();
 
 		if (existingUser) {
@@ -171,11 +173,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		}
 
 		const userId = generateId(15);
+
+		// Replace this with your own DB client.
 		await db.table("user").insert({
 			id: userId,
 			github_id: githubUser.id,
 			username: githubUser.login
 		});
+
 		const session = await lucia.createSession(userId, {});
 		return res
 			.appendHeader("Set-Cookie", lucia.createSessionCookie(session.id).serialize())

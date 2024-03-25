@@ -17,6 +17,8 @@ npm install @lucia-auth/adapter-mysql
 
 You can change the `varchar` length as necessary. `session(id)` should be able to hold at least 40 chars.
 
+User ID can be numeric (see [Define user ID type](/basics/users#define-user-id-type)) but session ID must be a string type.
+
 ```sql
 CREATE TABLE user (
     id VARCHAR(255) PRIMARY KEY
@@ -50,16 +52,16 @@ const adapter = new Mysql2Adapter(pool, {
 
 ### PlanetScale serverless
 
-`PlanetScaleAdapter` takes a `Connection` instance and a list of table names.
+`PlanetScaleAdapter` takes a `Client` or `Connection` instance and a list of table names.
 
 ```ts
 import { Lucia } from "lucia";
 import { PlanetScaleAdapter } from "@lucia-auth/adapter-mysql";
-import { connect } from "@planetscale/database";
+import { Client } from "@planetscale/database";
 
-const connection = connect();
+const client = new Client();
 
-const adapter = new PlanetScaleAdapter(connection, {
+const adapter = new PlanetScaleAdapter(client, {
 	user: "user",
 	session: "user_session"
 });

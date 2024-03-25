@@ -1,6 +1,6 @@
 import { eq, lte } from "drizzle-orm";
 
-import type { Adapter, DatabaseSession, DatabaseUser } from "lucia";
+import type { Adapter, DatabaseSession, DatabaseUser, UserId } from "lucia";
 import type {
 	SQLiteColumn,
 	BaseSQLiteDatabase,
@@ -15,7 +15,7 @@ export class DrizzleSQLiteAdapter implements Adapter {
 	private userTable: SQLiteUserTable;
 
 	constructor(
-		db: BaseSQLiteDatabase<any, any>,
+		db: BaseSQLiteDatabase<any, any, any>,
 		sessionTable: SQLiteSessionTable,
 		userTable: SQLiteUserTable
 	) {
@@ -28,30 +28,42 @@ export class DrizzleSQLiteAdapter implements Adapter {
 		await this.db.delete(this.sessionTable).where(eq(this.sessionTable.id, sessionId));
 	}
 
-	public async deleteUserSessions(userId: string): Promise<void> {
+	public async deleteUserSessions(userId: UserId): Promise<void> {
 		await this.db.delete(this.sessionTable).where(eq(this.sessionTable.userId, userId));
 	}
 
 	public async getSessionAndUser(
 		sessionId: string
 	): Promise<[session: DatabaseSession | null, user: DatabaseUser | null]> {
-		const result = await this.db
-			.select({
-				user: this.userTable,
-				session: this.sessionTable
-			})
-			.from(this.sessionTable)
-			.innerJoin(this.userTable, eq(this.sessionTable.userId, this.userTable.id))
-			.where(eq(this.sessionTable.id, sessionId))
-			.get();
-		if (!result) return [null, null];
-		return [
-			transformIntoDatabaseSession(result.session),
-			transformIntoDatabaseUser(result.user)
-		];
+		// https://github.com/drizzle-team/drizzle-orm/issues/555
+		const [databaseSession, databaseUser] = await Promise.all([
+			this.getSession(sessionId),
+			this.getUserFromSessionId(sessionId)
+		]);
+		return [databaseSession, databaseUser];
 	}
 
-	public async getUserSessions(userId: string): Promise<DatabaseSession[]> {
+	private async getSession(sessionId: string): Promise<DatabaseSession | null> {
+		const result = await this.db
+			.select()
+			.from(this.sessionTable)
+			.where(eq(this.sessionTable.id, sessionId));
+		if (result.length !== 1) return null;
+		return transformIntoDatabaseSession(result[0]);
+	}
+
+	private async getUserFromSessionId(sessionId: string): Promise<DatabaseUser | null> {
+		const { _, $inferInsert, $inferSelect, getSQL, ...userColumns } = this.userTable;
+		const result = await this.db
+			.select(userColumns)
+			.from(this.sessionTable)
+			.innerJoin(this.userTable, eq(this.sessionTable.userId, this.userTable.id))
+			.where(eq(this.sessionTable.id, sessionId));
+		if (result.length !== 1) return null;
+		return transformIntoDatabaseUser(result[0]);
+	}
+
+	public async getUserSessions(userId: UserId): Promise<DatabaseSession[]> {
 		const result = await this.db
 			.select()
 			.from(this.sessionTable)
@@ -100,7 +112,7 @@ export type SQLiteUserTable = SQLiteTableWithColumns<{
 				tableName: any;
 				dataType: any;
 				columnType: any;
-				data: string;
+				data: UserId;
 				driverParam: any;
 				notNull: true;
 				hasDefault: boolean; // must be boolean instead of any to allow default values
@@ -133,7 +145,7 @@ export type SQLiteSessionTable = SQLiteTableWithColumns<{
 		>;
 		expiresAt: SQLiteColumn<
 			{
-				dataType: "number";
+				dataType: any;
 				notNull: true;
 				enumValues: any;
 				tableName: any;
@@ -147,12 +159,12 @@ export type SQLiteSessionTable = SQLiteTableWithColumns<{
 		>;
 		userId: SQLiteColumn<
 			{
-				dataType: "string";
+				dataType: any;
 				notNull: true;
 				enumValues: any;
 				tableName: any;
 				columnType: any;
-				data: string;
+				data: UserId;
 				driverParam: any;
 				hasDefault: false;
 				name: any;

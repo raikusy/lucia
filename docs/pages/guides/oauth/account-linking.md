@@ -13,10 +13,13 @@ In general, you'd want to link accounts with the same email. Keep in mind that t
 ```ts
 import { generateId } from "lucia";
 
-const tokens = await github.validateAuthorizationCode(code);
+const tokens = await github.validateAuthorizationCode(code, {
+	scopes: ["user:email"]
+});
 const userResponse = await fetch("https://api.github.com/user", {
 	headers: {
 		Authorization: `Bearer ${tokens.accessToken}`
+		"User-Agent": "my-app", // GitHub requires a User-Agent header
 	}
 });
 const githubUser = await userResponse.json();

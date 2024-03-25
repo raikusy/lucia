@@ -6,7 +6,7 @@ title: "Tutorial: Username and password auth in Nuxt"
 
 Before starting, make sure you've set up your database and middleware as described in the [Getting started](/getting-started/nuxt) page.
 
-An [example project](https://github.com/lucia-auth/examples/tree/main/nuxt/username-and-password) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/v3/nuxt/username-and-password).
+An [example project](https://github.com/lucia-auth/examples/tree/main/nuxt/username-and-password) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/main/nuxt/username-and-password).
 
 ```
 npx degit https://github.com/lucia-auth/examples/tree/main/nuxt/username-and-password <directory_name>
@@ -55,25 +55,23 @@ interface DatabaseUserAttributes {
 
 ## Sign up user
 
-Create `pages/signup.nuxt` and set up a basic form.
+Create `pages/signup.vue` and set up a basic form.
 
 ```vue
 <!--pages/signup.vue-->
 <script lang="ts" setup>
 async function signup(e: Event) {
-	const result = await useFetch("/api/signup", {
+	await $fetch("/api/signup", {
 		method: "POST",
 		body: new FormData(e.target as HTMLFormElement)
 	});
-	if (!result.error.value) {
-		await navigateTo("/");
-	}
+	await navigateTo("/");
 }
 </script>
 
 <template>
 	<h1>Create an account</h1>
-	<form method="post" action="/api/login" @submit.prevent="signup">
+	<form method="post" action="/api/signup" @submit.prevent="signup">
 		<label htmlFor="username">Username</label>
 		<input name="username" id="username" />
 		<br />
@@ -152,13 +150,11 @@ Create `pages/login.vue` and set up a basic form.
 <!--pages/login.vue-->
 <script lang="ts" setup>
 async function login(e: Event) {
-	const result = await useFetch("/api/login", {
+	await $fetch("/api/login", {
 		method: "POST",
 		body: new FormData(e.target as HTMLFormElement)
 	});
-	if (!result.error.value) {
-		await navigateTo("/");
-	}
+	await navigateTo("/");
 }
 </script>
 
@@ -215,7 +211,7 @@ export default eventHandler(async (event) => {
 		// As a preventive measure, you may want to hash passwords even for invalid usernames.
 		// However, valid usernames can be already be revealed with the signup page among other methods.
 		// It will also be much more resource intensive.
-		// Since protecting against this is none-trivial,
+		// Since protecting against this is non-trivial,
 		// it is crucial your implementation is protected against brute-force attacks with login throttling etc.
 		// If usernames are public, you may outright tell the user that the username is invalid.
 		throw createError({
@@ -279,9 +275,9 @@ Then, create a global middleware in `middleware/auth.global.ts` to populate it.
 // middleware/auth.global.ts
 export default defineNuxtRouteMiddleware(async () => {
 	const user = useUser();
-	const { data } = await useFetch("/api/user");
-	if (data.value) {
-		user.value = data.value;
+	const data = await useRequestFetch()("/api/user");
+	if (data) {
+		user.value = data;
 	}
 });
 ```
@@ -314,10 +310,10 @@ export default eventHandler(async (event) => {
 ```vue
 <script lang="ts" setup>
 async function logout() {
-	await useFetch("/api/logout", {
+	await $fetch("/api/logout", {
 		method: "POST"
 	});
-	navigateTo("/login");
+	await navigateTo("/login");
 }
 </script>
 

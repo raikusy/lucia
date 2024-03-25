@@ -6,7 +6,7 @@ title: "GitHub OAuth in Nuxt"
 
 Before starting, make sure you've set up your database and middleware as described in the [Getting started](/getting-started/nuxt) page.
 
-An [example project](https://github.com/lucia-auth/examples/tree/main/nuxt/github-oauth) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/v3/nuxt/github-oauth).
+An [example project](https://github.com/lucia-auth/examples/tree/main/nuxt/github-oauth) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/main/nuxt/github-oauth).
 
 ```
 npx degit https://github.com/lucia-auth/examples/tree/main/nuxt/github-oauth <directory_name>
@@ -144,6 +144,8 @@ export default defineEventHandler(async (event) => {
 			}
 		});
 		const githubUser: GitHubUser = await githubUserResponse.json();
+
+		// Replace this with your own DB client.
 		const existingUser = await db.table("user").where("github_id", "=", githubUser.id).get();
 
 		if (existingUser) {
@@ -153,11 +155,14 @@ export default defineEventHandler(async (event) => {
 		}
 
 		const userId = generateId(15);
+
+		// Replace this with your own DB client.
 		await db.table("user").insert({
 			id: userId,
 			github_id: githubUser.id,
 			username: githubUser.login
 		});
+
 		const session = await lucia.createSession(userId, {});
 		appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
 		return sendRedirect(event, "/");
@@ -223,9 +228,9 @@ Then, create a global middleware in `middleware/auth.global.ts` to populate it.
 // middleware/auth.global.ts
 export default defineNuxtRouteMiddleware(async () => {
 	const user = useUser();
-	const { data } = await useFetch("/api/user");
-	if (data.value) {
-		user.value = data.value;
+	const data = await useRequestFetch()("/api/user");
+	if (data) {
+		user.value = data;
 	}
 });
 ```
@@ -258,10 +263,10 @@ export default eventHandler(async (event) => {
 ```vue
 <script lang="ts" setup>
 async function logout() {
-	await useFetch("/api/logout", {
+	await $fetch("/api/logout", {
 		method: "POST"
 	});
-	navigateTo("/login");
+	await navigateTo("/login");
 }
 </script>
 

@@ -6,7 +6,7 @@ title: "Tutorial: Username and password auth in Astro"
 
 Before starting, make sure you've set up your database and middleware as described in the [Getting started](/getting-started/astro) page.
 
-An [example project](https://github.com/lucia-auth/examples/tree/main/astro/username-and-password) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/v3/astro/username-and-password).
+An [example project](https://github.com/lucia-auth/examples/tree/main/astro/username-and-password) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/main/astro/username-and-password).
 
 ```
 npx degit https://github.com/lucia-auth/examples/tree/main/astro/username-and-password <directory_name>
@@ -61,7 +61,7 @@ Create `pages/signup.astro` and set up a basic form.
 <html lang="en">
 	<body>
 		<h1>Sign up</h1>
-		<form method="post" action="/api/login">
+		<form method="post" action="/api/signup">
 			<label for="username">Username</label>
 			<input id="username" name="username" />
 			<label for="password">Password</label>
@@ -196,7 +196,7 @@ export async function POST(context: APIContext): Promise<Response> {
 		// As a preventive measure, you may want to hash passwords even for invalid usernames.
 		// However, valid usernames can be already be revealed with the signup page among other methods.
 		// It will also be much more resource intensive.
-		// Since protecting against this is none-trivial,
+		// Since protecting against this is non-trivial,
 		// it is crucial your implementation is protected against brute-force attacks with login throttling etc.
 		// If usernames are public, you may outright tell the user that the username is invalid.
 		return new Response("Incorrect username or password", {

@@ -3,7 +3,8 @@ import type {
 	DatabaseSession,
 	RegisteredDatabaseSessionAttributes,
 	DatabaseUser,
-	RegisteredDatabaseUserAttributes
+	RegisteredDatabaseUserAttributes,
+	UserId
 } from "lucia";
 
 export class PrismaAdapter<_PrismaClient extends PrismaClient> implements Adapter {
@@ -27,7 +28,7 @@ export class PrismaAdapter<_PrismaClient extends PrismaClient> implements Adapte
 		}
 	}
 
-	public async deleteUserSessions(userId: string): Promise<void> {
+	public async deleteUserSessions(userId: UserId): Promise<void> {
 		await this.sessionModel.deleteMany({
 			where: {
 				userId
@@ -39,10 +40,7 @@ export class PrismaAdapter<_PrismaClient extends PrismaClient> implements Adapte
 		sessionId: string
 	): Promise<[session: DatabaseSession | null, user: DatabaseUser | null]> {
 		const userModelKey = this.userModel.name[0].toLowerCase() + this.userModel.name.slice(1);
-		const result = await this.sessionModel.findUnique<{
-			// this is a lie to make TS shut up
-			user: UserSchema;
-		}>({
+		const result = await this.sessionModel.findUnique({
 			where: {
 				id: sessionId
 			},
@@ -51,12 +49,14 @@ export class PrismaAdapter<_PrismaClient extends PrismaClient> implements Adapte
 			}
 		});
 		if (!result) return [null, null];
-		const userResult: UserSchema = result[userModelKey as "user"];
+		const userResult: UserSchema = result[
+			userModelKey as keyof typeof result
+		] as any as UserSchema;
 		delete result[userModelKey as keyof typeof result];
 		return [transformIntoDatabaseSession(result), transformIntoDatabaseUser(userResult)];
 	}
 
-	public async getUserSessions(userId: string): Promise<DatabaseSession[]> {
+	public async getUserSessions(userId: UserId): Promise<DatabaseSession[]> {
 		const result = await this.sessionModel.findMany({
 			where: {
 				userId
@@ -123,12 +123,12 @@ interface PrismaClient {
 }
 
 interface UserSchema extends RegisteredDatabaseUserAttributes {
-	id: string;
+	id: UserId;
 }
 
 interface SessionSchema extends RegisteredDatabaseSessionAttributes {
 	id: string;
-	userId: string;
+	userId: UserId;
 	expiresAt: Date;
 }
 

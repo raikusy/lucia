@@ -4,7 +4,7 @@ title: "Tutorial: Username and password auth in SvelteKit"
 
 # Tutorial: Username and password auth in SvelteKit
 
-Before starting, make sure you've set up your database and middleware as described in the [Getting started](/getting-started/astro) page.
+Before starting, make sure you've set up your database and middleware as described in the [Getting started](/getting-started/sveltekit) page.
 
 An [example project](https://github.com/lucia-auth/examples/tree/main/sveltekit/username-and-password) based on this tutorial is also available. You can clone the example locally or [open it in StackBlitz](https://stackblitz.com/github/lucia-auth/examples/tree/main/sveltekit/username-and-password).
 
@@ -206,7 +206,7 @@ export const actions: Actions = {
 			// As a preventive measure, you may want to hash passwords even for invalid usernames.
 			// However, valid usernames can be already be revealed with the signup page among other methods.
 			// It will also be much more resource intensive.
-			// Since protecting against this is none-trivial,
+			// Since protecting against this is non-trivial,
 			// it is crucial your implementation is protected against brute-force attacks with login throttling etc.
 			// If usernames are public, you may outright tell the user that the username is invalid.
 			return fail(400, {

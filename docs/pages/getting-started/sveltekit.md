@@ -6,10 +6,18 @@ title: "Getting started in Sveltekit"
 
 ## Installation
 
-Install Lucia using your package manager of your choice. While not strictly necessary, we recommend installing [Oslo](https://oslo.js.org), which Lucia is built on, for various auth utilities (which a lot of the guides use).
+Install Lucia using your package manager of your choice.
 
 ```
-npm install lucia oslo
+npm install -D lucia
+```
+
+While not strictly necessary, we recommend installing [Oslo](https://oslo.js.org), which Lucia is built on, for various auth utilities (which a lot of the guides use).
+
+If you use `@sveltejs/adapter-node`, make sure to install `oslo` as a `dependency`, not as `devDependency` to prevent Rollup from bundling `oslo`. See the [SvelteKit documentation](https://kit.svelte.dev/docs/adapter-node#deploying) for details.
+
+```
+npm install oslo
 ```
 
 ## Initialize Lucia
@@ -100,5 +108,7 @@ export {};
 ## Next steps
 
 You can learn all the concepts and APIs by reading the [Basics section](/basics/sessions) in the docs. If you prefer writing code immediately, check out the [Tutorials](/tutorials) page or the [examples repository](https://github.com/lucia-auth/examples/tree/main).
+
+This documentation often references [the Copenhagen Book](https://thecopenhagenbook.com/mfa). This is an open-source guide on implementing auth and should come in handy when implementing anything auth, including passkeys, multi-factor authentication, and a bit of cryptography. We recommend reading it to learn more about auth in web applications.
 
 If you have any questions, [join our Discord server](https://discord.com/invite/PwrK3kpVR3)!
